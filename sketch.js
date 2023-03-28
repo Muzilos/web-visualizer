@@ -12,9 +12,10 @@ let touchStartY;
 let touchThreshold = 50;
 
 let centerMessage;
+let musicFile = 'Solstitium.mp3';
 
 function preload() {
-  song = loadSound('music.mp3', () => {
+  song = loadSound(musicFile, () => {
     console.log('Song loaded');
   });
 }
