@@ -7,6 +7,11 @@ let spectrum;
 let visualizerType = 0;
 let visualizers;
 let colorScheme = 0;
+let touchStartX;
+let touchStartY;
+let touchThreshold = 50;
+
+let centerMessage;
 
 function preload() {
   song = loadSound('music.mp3', () => {
@@ -22,21 +27,11 @@ function setup() {
   fft = new p5.FFT();
   slider = createSlider(0, 1, 0, 0.01);
   slider.position(0, height - 20);
-  slider.style('width', '99%');
+  styleSlider()
   slider.input(onSliderInput);
 
-  const centerMessage = select('#center-message');
+  centerMessage = select('#center-message');
   centerMessage.show();
-
-  function togglePlay() {
-    if (song.isPlaying()) {
-      song.pause();
-      centerMessage.show();
-    } else {
-      song.play();
-      centerMessage.hide();
-    }
-  }
 
   function onSliderInput() {
     if (song.isLoaded()) {
@@ -80,14 +75,16 @@ function draw() {
     color1 = color(map(bass, 0, 255, 0, 255), 100, 100);
     color2 = color(map(treble, 0, 255, 0, 255), 100, 100);
   } else if (colorScheme === 1) {
-    color1 = color(100, map(bass, 0, 255, 0, 255), 100);
-    color2 = color(100, map(treble, 0, 255, 0, 255), 100);
+    // Red to green, orange to blue
+    color1 = color(map(bass, 0, 255, 0, 120), 100, 100);
+    color2 = color(map(treble, 0, 255, 30, 210), 100, 100);
   } else if (colorScheme === 2) {
-    color1 = color(100, map(treble, 0, 255, 0, 255), map(bass, 0, 255, 0, 255));
-    color2 = color(100, map(bass, 0, 255, 0, 255), map(treble, 0, 255, 0, 255));
+    // Pink to cyan
+    color1 = color(map(bass, 0, 255, 300, 180), 100, 100);
+    color2 = color(map(treble, 0, 255, 300, 180), 100, 100);
   }
+  // Render the selected visualizer type
   visualizers[visualizerType]();
-
 }
 
 function windowResized() {
@@ -95,6 +92,16 @@ function windowResized() {
   // Make sure slider stays on bottom of the screen
   if (slider){
     slider.position(0, height - 20);
+  }
+}
+
+function togglePlay() {
+  if (song.isPlaying()) {
+    song.pause();
+    centerMessage.show();
+  } else {
+    song.play();
+    centerMessage.hide();
   }
 }
 
@@ -170,4 +177,94 @@ function visualizer3() {
     noFill();
     ellipse(width / 2, height / 2, r * 2, r * 2);
   }
+}
+
+function touchStarted() {
+  // Ignore touches on the slider
+  let sliderRect = slider.elt.getBoundingClientRect();
+  if (mouseY < sliderRect.top || mouseY > sliderRect.bottom) {
+    touchStartX = mouseX;
+    touchStartY = mouseY;
+  } else {
+    touchStartX = null;
+    touchStartY = null;
+  }
+}
+
+function touchEnded() {
+  // Only handle touch events outside the slider area
+  if (touchStartX !== null && touchStartY !== null) {
+    let deltaX = mouseX - touchStartX;
+    let deltaY = mouseY - touchStartY;
+    // Detect swipe right
+    if (deltaX > touchThreshold && abs(deltaY) < touchThreshold) {
+      visualizerType = (visualizerType + 1) % visualizers.length;
+    }
+
+    // Detect swipe left
+    if (deltaX < -touchThreshold && abs(deltaY) < touchThreshold) {
+      visualizerType = (visualizerType - 1 + visualizers.length) % visualizers.length;
+    }
+
+    // Detect swipe up
+    if (deltaY < -touchThreshold && abs(deltaX) < touchThreshold) {
+      colorScheme = (colorScheme + 1) % 3;
+    }
+
+    // Detect swipe down
+    if (deltaY > touchThreshold && abs(deltaX) < touchThreshold) {
+      colorScheme = (colorScheme - 1 + 3) % 3;
+    }
+  }
+}
+
+function mouseClicked() {
+  if (mouseY < height - 20) { // Check if the click is outside the slider area
+    togglePlay();
+  }
+}
+
+function styleSlider() {
+  slider.style('width', '99%');
+  slider.style('height', '6px');
+  slider.style('appearance', 'none');
+  slider.style('outline', 'none');
+  slider.style('border', 'none');
+  slider.style('border-radius', '3px');
+  slider.style('background', 'rgba(255, 255, 255, 0.2)');
+  slider.style('cursor', 'pointer');
+  slider.style('transition', 'background 0.2s');
+  slider.mouseOver(() => slider.style('background', 'rgba(255, 255, 255, 0.5)'));
+  slider.mouseOut(() => slider.style('background', 'rgba(255, 255, 255, 0.2)'));
+  slider.attribute('oninput', 'this.style.setProperty("--value", this.value);');
+  slider.style('--value', '0');
+  slider.style('--thumb-size', '15px');
+  slider.style('--track-height', '6px');
+  slider.style('--track-fill-color', 'rgba(255, 255, 255, 0.5)');
+  slider.style('background-image', `
+    linear-gradient(
+      to right,
+      var(--track-fill-color) 0%,
+      var(--track-fill-color) calc(var(--value) * 100%),
+      rgba(255, 255, 255, 0.2) calc(var(--value) * 100%),
+      rgba(255, 255, 255, 0.2) 100%
+    )
+  `);
+  slider.style('-webkit-slider-thumb', `
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    appearance: none;
+    margin-top: calc(0px - (var(--thumb-size) - var(--track-height)) / 2);
+  `);
+  slider.style('-moz-range-thumb', `
+    width: var(--thumb-size);
+    height: var(--thumb-size);
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    appearance: none;
+  `);
 }

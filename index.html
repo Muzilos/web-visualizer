@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
-  <div id="center-message" class="center-message">Press SPACE to start</div>
+  <div id="center-message" class="center-message">Tap to Start <br/>⟵ Styles ⟶<br/>↑  Colors  ↓</div>
   <script src="sketch.js"></script>
   <style>
     body {
@@ -21,6 +21,32 @@
         font-family: sans-serif;
         color: white;
         text-shadow: 2px 2px 3px black;
+        align-content: center;
+        text-align: center;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 10px;
+        background: #fff;
+        border-radius: 0;
+        cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 10px;
+        background: #fff;
+        border-radius: 0;
+        cursor: pointer;
+    }
+
+    input[type="range"]::-ms-thumb {
+        width: 20px;
+        height: 10px;
+        background: #fff;
+        border-radius: 0;
+        cursor: pointer;
     }
   </style>
 </head>
