@@ -12,7 +12,7 @@ let touchStartY;
 let playOnLoad = false;
 
 let centerMessage;
-let musicFile = 'solstitium.mp3';
+let musicFile = 'assets/solstitium.mp3';
 
 function preload() {
   soundFormats('mp3');
