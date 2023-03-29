@@ -1,3 +1,5 @@
+const numLeaves = 30;
+let leaves = [];
 let song;
 let slider;
 let fft;
@@ -13,7 +15,7 @@ let playOnLoad = false;
 
 let centerMessage;
 let musicFile = 'assets/solstitium.mp3';
-
+// TODO: Allow for more mp3 options
 function preload() {
   soundFormats('mp3');
 }
@@ -34,13 +36,16 @@ function setup() {
   styleSlider()
   slider.input(onSliderInput);
 
+  for (let i = 0; i < numLeaves; i++) {
+    leaves.push(new Leaf());
+  }
   // Add more visualizers to the array as needed
-  visualizers = [visualizer1, visualizer2, visualizer3]; 
+  visualizers = [visualizer4, visualizer1, visualizer2, visualizer3]; 
 }
 
 function draw() {
   if (song.isLoaded()) {
-    background(0);
+    // background(0);
     const currentTime = song.currentTime();
     const duration = song.duration();
     slider.value(currentTime / duration);
@@ -63,11 +68,14 @@ function draw() {
     }
     // Render the selected visualizer type
     visualizers[visualizerType]();
+  } else {
+    visualizer4();
   }
 }
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  background(0);
   // Make sure slider stays on bottom of the screen
   if (slider) {
     slider.position(0, height - 20);
@@ -78,8 +86,10 @@ function keyPressed() {
   if (keyCode === 32) {
     togglePlay();
   } else if (keyCode === RIGHT_ARROW) {
+    background(0);
     visualizerType = (visualizerType + 1) % visualizers.length;
   } else if (keyCode === LEFT_ARROW) {
+    background(0);
     visualizerType = (visualizerType - 1 + visualizers.length) % visualizers.length;
   } else if (keyCode === UP_ARROW) {
     colorScheme = (colorScheme + 1) % 3;
@@ -121,6 +131,7 @@ function onSliderInput() {
 
 // Visualizes smooth concentric circles with varying gradient fill
 function visualizer1() {
+  background(0);
   let numCircles = 10;
   let maxRadius = min(width, height) / 2;
 
@@ -156,9 +167,11 @@ function visualizer1() {
 const numRows = 10;
 const numCols = 10;
 function visualizer2() {
+  background(0);
+  fill('red')
   let w = width / numCols;
   let h = height / numRows;
-  strokeWeight(0);
+  strokeWeight(2);
 
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
@@ -176,6 +189,7 @@ function visualizer2() {
 const numLines = 72;
 const step = 360 / numLines
 function visualizer3() {
+  background(0);
   let maxRadius = min(width, height) * 0.8;
 
   for (let angle = 0; angle < (numLines * step); angle += step) {
@@ -192,6 +206,18 @@ function visualizer3() {
     stroke(col);
     strokeWeight(2);
     line(x1, y1, x2, y2);
+  }
+}
+
+// Draw falling leaves on the screen
+function visualizer4() {
+  drawingContext.shadowOffsetX = 3;
+  drawingContext.shadowOffsetY = 3;
+  drawingContext.shadowBlur = 6;
+  drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  for (let leaf of leaves) {
+    leaf.update();
+    leaf.display();
   }
 }
 
@@ -215,11 +241,13 @@ function touchEnded() {
     let deltaY = mouseY - touchStartY;
     // Detect swipe right
     if (deltaX > touchThreshold && abs(deltaY) < touchThreshold) {
+      background(0);
       visualizerType = (visualizerType + 1) % visualizers.length;
     }
 
     // Detect swipe left
     if (deltaX < -touchThreshold && abs(deltaY) < touchThreshold) {
+      background(0);
       visualizerType = (visualizerType - 1 + visualizers.length) % visualizers.length;
     }
 
@@ -315,4 +343,40 @@ function styleSlider() {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     appearance: none;
   `);
+}
+
+class Leaf {
+  constructor() {
+    this.x = random(width);
+    this.size = random(10, 40);
+    this.y = height + this.size;
+    this.speed = random(1, 3);
+    this.angle = random(TWO_PI);
+    this.angleSpeed = random(-0.05, 0.05);
+  }
+
+  update() {
+    this.y -= this.speed;
+    this.angle -= this.angleSpeed;
+
+    // Reset the leaf's position when it goes off the screen
+    if (this.y < -this.size) {
+      this.x = random(width);
+      this.y = random(height);
+    }
+  }
+
+  display() {
+    push();
+    translate(this.x, this.y);
+    rotate(this.angle);
+    if (!color1 || !color2) {
+      color1 = color(100, 100, 100);
+      color2 = color(255, 255, 255);
+    }
+    fill(lerpColor(color1, color2, this.y / height));
+    noStroke();
+    ellipse(0, 0, this.size, this.size / 2);
+    pop();
+  }
 }
