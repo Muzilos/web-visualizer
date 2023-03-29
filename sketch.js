@@ -24,7 +24,7 @@ function setup() {
   frameRate(24);
   noStroke();
 
-  fft = new p5.FFT();//0.8, 64);
+  fft = new p5.FFT(0.8, 64);
   song = loadSound(musicFile, playSongIfLoading, null, drawLoadingCircle);
   centerMessage = select('#center-message');
   centerMessage.show();
@@ -101,7 +101,7 @@ function togglePlay() {
     centerMessage.hide();
   } else {
     playOnLoad = true;
-    centerMessage.html('Loading... please wait');
+    centerMessage.html('Loading...');
   }
 }
 
@@ -243,12 +243,11 @@ function mouseClicked() {
   }
 }
 
-function drawLoadingCircle(event) {
-  let loadedFraction = event.loaded / event.total;
+function drawLoadingCircle(loadedFraction) {
   let centerX = width / 2;
   let centerY = height / 2;
   let radius = 100;
-  const numSegments = 50;
+  const numSegments = 100;
 
   background(0);
   noFill();
@@ -261,7 +260,7 @@ function drawLoadingCircle(event) {
     let x2 = centerX + radius * cos(angle + TWO_PI / numSegments);
     let y2 = centerY + radius * sin(angle + TWO_PI / numSegments);
 
-    col1 = color(0, 0, 0);
+    col1 = color(100, 100, 100);
     col2 = color(255, 255, 255);
     let col = lerpColor(col1, col2, i / numSegments);
     stroke(col);
