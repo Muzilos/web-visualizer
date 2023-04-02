@@ -55,8 +55,8 @@ function draw() {
       color2 = color(map(treble, 0, 255, 30, 210), 20, 100);
     } else if (colorScheme === 1) {
       // yellow to blue
-      color1 = color(map(bass, 0, 255, 0, 255), 100, 100);
-      color2 = color(map(treble, 0, 255, 0, 100), 100, 100);
+      color1 = color(map(bass, 0, 360, 0, 360), 100, 100);
+      color2 = color(map(treble, 0, 360, 360, 360), 100, 100);
     } else if (colorScheme === 2) {
       // Purple to cyan
       color1 = color(map(bass, 0, 255, 300, 180), 100, 100);
