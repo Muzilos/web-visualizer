@@ -1,5 +1,3 @@
-// const numLeaves = 5;
-// let leaves = [];
 let song;
 let slider;
 let fft;
@@ -7,11 +5,12 @@ let color1;
 let color2;
 let spectrum;
 let visualizerType = 0;
-let visualizers;
+let visualizer;
 let colorScheme = 0;
 let touchStartX;
 let touchStartY;
 let playOnLoad = false;
+let totalVisualizers = 3;
 
 let centerMessage;
 let musicFile = 'assets/solstitium.mp3';
@@ -36,11 +35,7 @@ function setup() {
   styleSlider()
   slider.input(onSliderInput);
 
-  // for (let i = 0; i < numLeaves; i++) {
-  //   leaves.push(new Leaf());
-  // }
-  // Add more visualizers to the array as needed
-  visualizers = [visualizer1, visualizer2]; 
+  visualizer = visualizer0;
 }
 
 function draw() {
@@ -61,18 +56,25 @@ function draw() {
     } else if (colorScheme === 1) {
       // yellow to blue
       color1 = color(map(bass, 0, 255, 0, 255), 100, 100);
-      color2 = color(map(treble, 0, 255, 0, 99), 80, 100);
+      color2 = color(map(treble, 0, 255, 0, 100), 100, 100);
     } else if (colorScheme === 2) {
       // Purple to cyan
       color1 = color(map(bass, 0, 255, 300, 180), 100, 100);
       color2 = color(map(treble, 0, 255, 300, 180), 100, 100);
     }
+
     // Render the selected visualizer type
-    visualizers[visualizerType]();
-  } else {
-    visualizer1();
+    if (visualizerType === 0) {
+      visualizer = visualizer0;
+    } else if (visualizerType === 1) {
+      visualizer = visualizer1;
+    } else if (visualizerType === 2) {
+      visualizer = visualizer2;
+    }
+    visualizer();
   }
 }
+
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
@@ -88,10 +90,10 @@ function keyPressed() {
     togglePlay();
   } else if (keyCode === RIGHT_ARROW) {
     background(0);
-    visualizerType = (visualizerType + 1) % visualizers.length;
+    visualizerType = (visualizerType + 1) % totalVisualizers;
   } else if (keyCode === LEFT_ARROW) {
     background(0);
-    visualizerType = (visualizerType - 1 + visualizers.length) % visualizers.length;
+    visualizerType = (visualizerType - 1 + totalVisualizers) % totalVisualizers;
   } else if (keyCode === UP_ARROW) {
     colorScheme = (colorScheme + 1) % 3;
   } else if (keyCode === DOWN_ARROW) {
@@ -131,7 +133,7 @@ function onSliderInput() {
 }
 
 // Visualizes smooth concentric circles with varying gradient fill
-function visualizer1() {
+function visualizer0() {
   if (song.isLoaded()) {
     background(0);
     let numCircles = 4;
@@ -169,14 +171,12 @@ function visualizer1() {
 }
 
 // Visualizes colorful rectangular blocks
-const numRows = 5;
-const numCols = 3;
-function visualizer2() {
+function visualizer1() {
   background(lerpColor(color2, color(0), 100));
-  // fill('red')
+  let numRows = 5;
+  let numCols = 3;
   let w = width / numCols;
   let h = height / numRows;
-  // fill();
   strokeWeight(3);
 
   for (let i = 0; i < numRows; i++) {
@@ -192,10 +192,10 @@ function visualizer2() {
 }
 
 // Draw radial lines with gradient colors
-const numLines = 72;
-const step = 360 / numLines
-function visualizer3() {
+function visualizer2() {
   background(0);
+  let numLines = 200;
+  let step = 360 / numLines
   let maxRadius = min(width, height) * 0.8;
 
   for (let angle = 0; angle < (numLines * step); angle += step) {
@@ -212,18 +212,6 @@ function visualizer3() {
     stroke(col);
     strokeWeight(2);
     line(x1, y1, x2, y2);
-  }
-}
-
-// Draw falling leaves on the screen
-function visualizer4() {
-  drawingContext.shadowOffsetX = 3;
-  drawingContext.shadowOffsetY = 3;
-  drawingContext.shadowBlur = 6;
-  drawingContext.shadowColor = 'rgba(0, 0, 0, 0.5)';
-  for (let leaf of leaves) {
-    leaf.update();
-    leaf.display();
   }
 }
 
@@ -248,13 +236,13 @@ function touchEnded() {
     // Detect swipe right
     if (deltaX > touchThreshold && abs(deltaY) < touchThreshold) {
       background(0);
-      visualizerType = (visualizerType + 1) % visualizers.length;
+      visualizerType = (visualizerType + 1) % totalVisualizers;
     }
 
     // Detect swipe left
     if (deltaX < -touchThreshold && abs(deltaY) < touchThreshold) {
       background(0);
-      visualizerType = (visualizerType - 1 + visualizers.length) % visualizers.length;
+      visualizerType = (visualizerType - 1 + totalVisualizers) % totalVisualizers;
     }
 
     // Detect swipe up
@@ -350,39 +338,3 @@ function styleSlider() {
     appearance: none;
   `);
 }
-
-// class Leaf {
-//   constructor() {
-//     this.x = random(30, width - 30);
-//     this.size = random(30, 65);
-//     this.y = height + this.size;
-//     this.speed = random(1, 3);
-//     this.angle = random(TWO_PI);
-//     this.angleSpeed = random(-0.05, 0.05);
-//   }
-
-//   update() {
-//     this.y -= this.speed;
-//     this.angle -= this.angleSpeed;
-
-//     // Reset the leaf's position when it goes off the screen
-//     if (this.y < -this.size) {
-//       this.x = random(width);
-//       this.y = random(height);
-//     }
-//   }
-
-//   display() {
-//     push();
-//     translate(this.x, this.y);
-//     rotate(this.angle);
-//     if (!color1 || !color2) {
-//       color1 = color(100, 100, 100);
-//       color2 = color(255, 255, 255);
-//     }
-//     fill(lerpColor(color1, color2, this.y / height));
-//     noStroke();
-//     ellipse(0, 0, this.size, this.size / 2);
-//     pop();
-//   }
-// }
