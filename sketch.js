@@ -1,5 +1,5 @@
-const numLeaves = 30;
-let leaves = [];
+// const numLeaves = 5;
+// let leaves = [];
 let song;
 let slider;
 let fft;
@@ -23,7 +23,7 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   colorMode(HSB, 360, 100, 100);
-  frameRate(24);
+  frameRate(12);
   noStroke();
 
   fft = new p5.FFT(0.8, 64);
@@ -36,11 +36,11 @@ function setup() {
   styleSlider()
   slider.input(onSliderInput);
 
-  for (let i = 0; i < numLeaves; i++) {
-    leaves.push(new Leaf());
-  }
+  // for (let i = 0; i < numLeaves; i++) {
+  //   leaves.push(new Leaf());
+  // }
   // Add more visualizers to the array as needed
-  visualizers = [visualizer4, visualizer1, visualizer2, visualizer3]; 
+  visualizers = [visualizer1, visualizer2]; 
 }
 
 function draw() {
@@ -55,21 +55,22 @@ function draw() {
     let treble = fft.getEnergy('treble');
 
     if (colorScheme === 0) {
-      color1 = color(map(bass, 0, 360, 0, 255), 100, 100);
-      color2 = color(map(treble, 0, 360, 0, 255), 100, 100);
+      // pink to cyan
+      color1 = color(map(bass, 0, 255, 30, 210), 80, 100);
+      color2 = color(map(treble, 0, 255, 30, 210), 20, 100);
     } else if (colorScheme === 1) {
-      // Red to green, orange to blue
-      color1 = color(map(bass, 0, 360, 0, 120), 100, 100);
-      color2 = color(map(treble, 0, 360, 30, 210), 100, 100);
+      // yellow to blue
+      color1 = color(map(bass, 0, 255, 0, 255), 100, 100);
+      color2 = color(map(treble, 0, 255, 0, 99), 80, 100);
     } else if (colorScheme === 2) {
-      // Pink to cyan
-      color1 = color(map(bass, 0, 360, 300, 180), 100, 100);
-      color2 = color(map(treble, 0, 360, 300, 180), 100, 100);
+      // Purple to cyan
+      color1 = color(map(bass, 0, 255, 300, 180), 100, 100);
+      color2 = color(map(treble, 0, 255, 300, 180), 100, 100);
     }
     // Render the selected visualizer type
     visualizers[visualizerType]();
   } else {
-    visualizer4();
+    visualizer1();
   }
 }
 
@@ -131,47 +132,52 @@ function onSliderInput() {
 
 // Visualizes smooth concentric circles with varying gradient fill
 function visualizer1() {
-  background(0);
-  let numCircles = 10;
-  let maxRadius = min(width, height) / 2;
+  if (song.isLoaded()) {
+    background(0);
+    let numCircles = 4;
+    let maxRadius = min(width, height) / 2.5;
+    drawingContext.shadowOffsetX = 0;
+    drawingContext.shadowOffsetY = 0;
 
-  let bass = fft.getEnergy('bass');
-  let treble = fft.getEnergy('treble');
+    let bass = fft.getEnergy('bass');
+    let treble = fft.getEnergy('treble');
 
-  let bassScaled = map(bass, 0, 255, 0, maxRadius);
-  let trebleScaled = map(treble, 0, 255, 0, maxRadius);
+    let bassScaled = map(bass, 0, 255, 0, maxRadius);
+    let trebleScaled = map(treble, 0, 255, 0, maxRadius);
 
-  let bgLerpAmount = map(bass, 0, 255, 0, 1);
-  let bgColor = lerpColor(color1, color2, bgLerpAmount);
-  bgColor.setAlpha(0.2); // Set the alpha value for a darker background
-  background(bgColor);
+    let bgLerpAmount = map(bass, 0, 255, 0, 1);
+    let bgColor = lerpColor(color1, color2, bgLerpAmount);
+    bgColor.setAlpha(0.2); // Set the alpha value for a darker background
+    background(bgColor);
 
-  // Draw an inner circle that changes size and color based on treble
-  let innerCircleRadius = map(treble, 0, 255, 20, maxRadius / 2);
-  fill(color2);
-  noStroke();
-  ellipse(width / 2, height / 2, innerCircleRadius * 2, innerCircleRadius * 2);
+    // Draw an inner circle that changes size and color based on treble
+    let innerCircleRadius = map(treble, 0, 255, 35, maxRadius / 2);
+    fill(color2);
+    noStroke();
+    ellipse(width / 2, height / 2, innerCircleRadius * 2, innerCircleRadius * 2);
 
-  for (let i = 0; i < numCircles; i++) {
-    let r = map(i, 0, numCircles - 1, bassScaled, trebleScaled);
-    let col = lerpColor(color1, color2, i / (numCircles - 1));
-    
-    stroke(col);
-    strokeWeight(2);
-    noFill();
-    ellipse(width / 2, height / 2, r * 2, r * 2);
+    for (let i = 0; i < numCircles; i++) {
+      let r = map(i, 0, numCircles - 1, bassScaled, trebleScaled);
+      let col = lerpColor(color1, color2, i / (numCircles - 1));
+      
+      stroke(col);
+      strokeWeight(2);
+      noFill();
+      ellipse(width / 2, height / 2, r * 2, r * 2);
+    }
   }
 }
 
 // Visualizes colorful rectangular blocks
-const numRows = 10;
-const numCols = 10;
+const numRows = 5;
+const numCols = 3;
 function visualizer2() {
-  background(0);
-  fill('red')
+  background(lerpColor(color2, color(0), 100));
+  // fill('red')
   let w = width / numCols;
   let h = height / numRows;
-  strokeWeight(2);
+  // fill();
+  strokeWeight(3);
 
   for (let i = 0; i < numRows; i++) {
     for (let j = 0; j < numCols; j++) {
@@ -275,7 +281,7 @@ function drawLoadingCircle(loadedFraction) {
   let centerX = width / 2;
   let centerY = height / 2;
   let radius = 100;
-  const numSegments = 100;
+  const numSegments = 10;
 
   background(0);
   noFill();
@@ -345,38 +351,38 @@ function styleSlider() {
   `);
 }
 
-class Leaf {
-  constructor() {
-    this.x = random(width);
-    this.size = random(10, 40);
-    this.y = height + this.size;
-    this.speed = random(1, 3);
-    this.angle = random(TWO_PI);
-    this.angleSpeed = random(-0.05, 0.05);
-  }
+// class Leaf {
+//   constructor() {
+//     this.x = random(30, width - 30);
+//     this.size = random(30, 65);
+//     this.y = height + this.size;
+//     this.speed = random(1, 3);
+//     this.angle = random(TWO_PI);
+//     this.angleSpeed = random(-0.05, 0.05);
+//   }
 
-  update() {
-    this.y -= this.speed;
-    this.angle -= this.angleSpeed;
+//   update() {
+//     this.y -= this.speed;
+//     this.angle -= this.angleSpeed;
 
-    // Reset the leaf's position when it goes off the screen
-    if (this.y < -this.size) {
-      this.x = random(width);
-      this.y = random(height);
-    }
-  }
+//     // Reset the leaf's position when it goes off the screen
+//     if (this.y < -this.size) {
+//       this.x = random(width);
+//       this.y = random(height);
+//     }
+//   }
 
-  display() {
-    push();
-    translate(this.x, this.y);
-    rotate(this.angle);
-    if (!color1 || !color2) {
-      color1 = color(100, 100, 100);
-      color2 = color(255, 255, 255);
-    }
-    fill(lerpColor(color1, color2, this.y / height));
-    noStroke();
-    ellipse(0, 0, this.size, this.size / 2);
-    pop();
-  }
-}
+//   display() {
+//     push();
+//     translate(this.x, this.y);
+//     rotate(this.angle);
+//     if (!color1 || !color2) {
+//       color1 = color(100, 100, 100);
+//       color2 = color(255, 255, 255);
+//     }
+//     fill(lerpColor(color1, color2, this.y / height));
+//     noStroke();
+//     ellipse(0, 0, this.size, this.size / 2);
+//     pop();
+//   }
+// }
